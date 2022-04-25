@@ -1,7 +1,63 @@
 use std::io;
 
 macro_rules! parse_input {
-    ($x:expr, $t:ident) => ($x.trim().parse::<$t>().unwrap())
+    ($x:expr, $t:ident) => {
+        $x.trim().parse::<$t>().unwrap()
+    };
+}
+
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+enum EntityType {
+    MONSTER = 0,
+    FRIEND_HERO,
+    OPPONENT_HERO,
+}
+
+struct Entity {
+    position: Point,
+    entity_type: EntityType,
+    distance: i32,
+}
+
+struct BaseData {
+    position: Point,
+    health: i32,
+    mana: i32,
+    hero_count: i32,
+}
+
+fn read_initial_input() -> BaseData {
+    let mut input_line = String::new();
+    io::stdin().read_line(&mut input_line).unwrap();
+    let inputs = input_line.split(" ").collect::<Vec<_>>();
+    let x = parse_input!(inputs[0], i32); // The corner of the map representing your base
+    let y = parse_input!(inputs[1], i32);
+    let mut input_line = String::new();
+    io::stdin().read_line(&mut input_line).unwrap();
+    let hero_count = parse_input!(input_line, i32); // Always 3
+    return BaseData {
+        position: Point { x, y },
+        health: 0,
+        mana: 0,
+        hero_count,
+    };
+}
+
+fn read_player_data(base_data: &mut BaseData) {
+    let mut input_line = String::new();
+    io::stdin().read_line(&mut input_line).unwrap();
+    let inputs = input_line.split(" ").collect::<Vec<_>>();
+    base_data.health = parse_input!(inputs[0], i32); // Each player's base health
+    base_data.mana = parse_input!(inputs[1], i32); // Ignore in the first league; Spend ten mana to cast a spell
+}
+
+fn point_distance(a: &Point, b: &Point) -> i32 {
+    let val: f64 = ((a.x - b.x).abs() + (a.y - b.y).abs()) as f64;
+    return val.sqrt() as i32;
 }
 
 /**
@@ -9,27 +65,27 @@ macro_rules! parse_input {
  * the standard input according to the problem statement.
  **/
 fn main() {
-    let mut input_line = String::new();
-    io::stdin().read_line(&mut input_line).unwrap();
-    let inputs = input_line.split(" ").collect::<Vec<_>>();
-    let base_x = parse_input!(inputs[0], i32); // The corner of the map representing your base
-    let base_y = parse_input!(inputs[1], i32);
-    let mut input_line = String::new();
-    io::stdin().read_line(&mut input_line).unwrap();
-    let heroes_per_player = parse_input!(input_line, i32); // Always 3
-
+    let mut base_data: BaseData = read_initial_input();
+    let mut opponent_base_data = BaseData {
+        position: Point { x: 0, y: 0 },
+        health: base_data.health,
+        hero_count: base_data.hero_count,
+        mana: base_data.mana
+    };
     // game loop
     loop {
-        for i in 0..2 as usize {
-            let mut input_line = String::new();
-            io::stdin().read_line(&mut input_line).unwrap();
-            let inputs = input_line.split(" ").collect::<Vec<_>>();
-            let health = parse_input!(inputs[0], i32); // Each player's base health
-            let mana = parse_input!(inputs[1], i32); // Ignore in the first league; Spend ten mana to cast a spell
-        }
+
+        read_player_data(&mut base_data);
+        read_player_data(&mut opponent_base_data);
+
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let entity_count = parse_input!(input_line, i32); // Amount of heros and monsters you can see
+        let mut target = Entity {
+            position: Point { x: 0, y: 0 },
+            entity_type: EntityType::MONSTER,
+            distance: std::i32::MAX,
+        };
         for i in 0..entity_count as usize {
             let mut input_line = String::new();
             io::stdin().read_line(&mut input_line).unwrap();
@@ -45,15 +101,20 @@ fn main() {
             let vy = parse_input!(inputs[8], i32);
             let near_base = parse_input!(inputs[9], i32); // 0=monster with no target yet, 1=monster targeting a base
             let threat_for = parse_input!(inputs[10], i32); // Given this monster's trajectory, is it a threat to 1=your base, 2=your opponent's base, 0=neither
-        }
-        for i in 0..heroes_per_player as usize {
 
+            let distance = point_distance(&base_data.position, &Point { x, y });
+            if _type == 0 && distance < target.distance {
+                target.position = Point { x, y };
+                target.distance = distance;
+            }
+        }
+
+        for i in 0..base_data.hero_count as usize {
             // Write an action using println!("message...");
             // To debug: eprintln!("Debug message...");
 
-
             // In the first league: MOVE <x> <y> | WAIT; In later leagues: | SPELL <spellParams>;
-            println!("WAIT");
+            println!("MOVE {} {}", target.position.x, target.position.y);
         }
     }
 }
