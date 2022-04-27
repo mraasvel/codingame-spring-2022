@@ -1,5 +1,9 @@
 use std::io;
 
+const HERO_ONE: &str = "Hero One";
+const HERO_TWO: &str = "Hero Two";
+const HERO_THREE: &str = "Hero Three";
+
 macro_rules! parse_input {
     ($x:expr, $t:ident) => {
         $x.trim().parse::<$t>().unwrap()
@@ -12,15 +16,29 @@ struct Point {
 }
 
 enum EntityType {
-    MONSTER = 0,
-    FRIEND_HERO,
-    OPPONENT_HERO,
+    Monster = 0,
+    FriendHero,
+    OpponentHero,
 }
 
-struct Entity {
-    position: Point,
-    entity_type: EntityType,
-    distance: i32,
+impl EntityType {
+    fn convert_number(n: i32) -> Option<EntityType> {
+        match n {
+            0 => Some(EntityType::Monster),
+            1 => Some(EntityType::FriendHero),
+            2 => Some(EntityType::OpponentHero),
+            _ => None,
+        }
+    }
+}
+
+trait Entity {
+}
+
+struct Hero {
+}
+
+struct Monster {
 }
 
 struct BaseData {
@@ -74,18 +92,12 @@ fn main() {
     };
     // game loop
     loop {
-
         read_player_data(&mut base_data);
         read_player_data(&mut opponent_base_data);
 
         let mut input_line = String::new();
         io::stdin().read_line(&mut input_line).unwrap();
         let entity_count = parse_input!(input_line, i32); // Amount of heros and monsters you can see
-        let mut target = Entity {
-            position: Point { x: 0, y: 0 },
-            entity_type: EntityType::MONSTER,
-            distance: std::i32::MAX,
-        };
         for i in 0..entity_count as usize {
             let mut input_line = String::new();
             io::stdin().read_line(&mut input_line).unwrap();
@@ -101,20 +113,13 @@ fn main() {
             let vy = parse_input!(inputs[8], i32);
             let near_base = parse_input!(inputs[9], i32); // 0=monster with no target yet, 1=monster targeting a base
             let threat_for = parse_input!(inputs[10], i32); // Given this monster's trajectory, is it a threat to 1=your base, 2=your opponent's base, 0=neither
-
-            let distance = point_distance(&base_data.position, &Point { x, y });
-            if _type == 0 && distance < target.distance {
-                target.position = Point { x, y };
-                target.distance = distance;
-            }
         }
 
-        for i in 0..base_data.hero_count as usize {
-            // Write an action using println!("message...");
-            // To debug: eprintln!("Debug message...");
-
-            // In the first league: MOVE <x> <y> | WAIT; In later leagues: | SPELL <spellParams>;
-            println!("MOVE {} {}", target.position.x, target.position.y);
-        }
+        // Write an action using println!("message...");
+        // To debug: eprintln!("Debug message...");
+        // In the first league: MOVE <x> <y> | WAIT; In later leagues: | SPELL <spellParams>;
+        println!("WAIT");
+        println!("WAIT");
+        println!("WAIT");
     }
 }
